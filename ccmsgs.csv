@@ -56,9 +56,9 @@ Arpeggiator Sound as Played,54,0,1,2
 Velocity Operator 1 Intensity,56,0,4,5
 Velocity Operator 1 Invert,57,0,1,2
 Velocity Operator 1 Target,58,1,12,12
-Velocity Operator 1 Intensity,59,0,4,5
-Velocity Operator 1 Invert,60,0,1,2
-Velocity Operator 1 Target,61,1,12,12
+Velocity Operator 2 Intensity,59,0,4,5
+Velocity Operator 2 Invert,60,0,1,2
+Velocity Operator 2 Target,61,1,12,12
 VCF Velocity Sensitive Intensity ,62,0,6,7
 VCF velocity sensitive response shape,63,1,4,4
 LFO1 frequency,64,0,15,16
