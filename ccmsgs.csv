@@ -75,7 +75,7 @@ LFO2 delay invert,75,0,1,2
 LFO2 PWM phase,76,1,63,63
 LFO4 waveform for LFO2 frequency modulation ,77,1,13,13
 LFO4 modulation depth of LFO2 freq. modulation,78,0,15,16
-"LFO1 start phase position 0,90,180,270 degrees",71,1,4,4
+LFO1 start phase position 0/90/180/270 degrees,71,1,4,4
 LFO2 sync driven frequency,79,0,63,64
 DCO LFO waveform selector ,80,1,13,13
 DCO LFO modulation source selector,81,1,4,4
@@ -116,7 +116,7 @@ quarter note rate of clocked random sample and hold ,115,1,99,99
 SLFO4 frequency,116,0,15,16
 SLFO4 PWM phase,117,1,63,63
 SLFO4 free running,118,0,1,2
-"SLFO4 start phase position 0,90,180,270 degrees",119,1,4,4
+SLFO4 start phase position 0/90/180/270 degrees,119,1,4,4
 Tremolo DCO1 mode and LFO sourceExtended ,120,0,2,3
 Tremolo DCO1 LFO modulation depth,121,0,15,16
 Tremolo DCO2 mode and LFO source,122,0,2,3
