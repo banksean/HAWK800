@@ -45,6 +45,15 @@ byte NUMBER_POTS = 6;
 
 byte MIDI_CH = 1;
 
+// lastCtrl keeps track of the last parameter we sent. This is
+// a slight optimization, so that in cases where you start
+// sweeping a parameter it only has to send the parameter select
+// CC for the first one, then just keep sending values after that,
+// until the user starts changing a different parameter.
+//
+// CC 83 explicitly not used as of the HAWK800 version I have
+// installed.
+byte lastCtrl = 83;
 
 //***DEFINE DIRECTLY CONNECTED POTENTIOMETERS************************
 //Pot (Pin Number, Command, CC Control, Channel Number)
@@ -77,6 +86,10 @@ void handleControlChange(byte channel, byte number, byte value) {
   if (channel != MIDI_CH) {
     return;
   }
+  // Reset the last control, since we don't know what the other
+  // MIDI device sent or why. Just assume we need to send the 
+  // parameter select CC again next time.
+  //lastCtrl = 83;
   MIDI.sendControlChange(number, value, channel);
 }
 
@@ -169,9 +182,16 @@ void updatePots() {
        * 1) Send MIDI CC 84 with the data value set to select the desired target parameter where 00-63 matches parameters in the P1 bank (P1 11-88) and 64-127 matches the parameters in the P2 bank (P2 11-88).
        * 2) Send MIDI CC 85 with the data value set to the desired value for the target parameter (but ranged to fit within 0-127 or an absolute value depending upon global parameter 47).
        */
-      MIDI.sendControlChange(84, POTS[i]->Pcontrol, POTS[i]->Pchannel);
-      // In practice, the HAWK800 will crash if you send too many of these messages too quickly.
-      delay(10);
+      byte ctrl = POTS[i]->Pcontrol;
+      // Only send a parameter select if it changed since the last time we sent
+      // a CC.
+      if (ctrl != lastCtrl) {
+        MIDI.sendControlChange(84, ctrl, POTS[i]->Pchannel);
+        // In practice, the HAWK800 will crash if you send too many of these messages too quickly.
+        delay(10);
+      }
+      lastCtrl = ctrl;
+   
       MIDI.sendControlChange(85, potmessage, POTS[i]->Pchannel);
       // MIDI.sendControlChange(POTS[i]->Pcontrol, potmessage, POTS[i]->Pchannel);
     }
