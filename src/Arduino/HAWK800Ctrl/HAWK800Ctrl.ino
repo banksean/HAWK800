@@ -48,7 +48,7 @@ byte MIDI_CH = 1;
 // lastCtrl keeps track of the last parameter we sent. This is
 // a slight optimization, so that in cases where you start
 // sweeping a parameter it only has to send the parameter select
-// CC for the first one, then just keep sending values after that,
+// CC for the first update, then just keep sending values after that,
 // until the user starts changing a different parameter.
 //
 // CC 83 explicitly not used as of the HAWK800 version I have
