@@ -21,9 +21,20 @@ func main() {
 	}
 
 	// First row is column titles.
+
+	fmt.Printf(`
+typedef struct {
+  byte cc;
+  byte min;
+  byte max;
+} Param;
+`)
+
 	// Name, CC#, Min, Max, Range
+	vars := []string{}
+	names := []string{}
 	for _, row := range rows[1:] {
-		name := strings.Trim(strings.ToTitle(row[0]), " ")
+		name := strings.TrimSpace(strings.ToTitle(row[0]))
 		for _, c := range ".()/-*" {
 			name = strings.Replace(name, string(c), "", -1)
 		}
@@ -31,22 +42,17 @@ func main() {
 		if name == "NOT_USED" {
 			continue
 		}
-		fmt.Printf("byte %s = %s;\n", name, row[1])
+		display := row[5]
+		if len(display) == 0 {
+			continue
+		}
+		vars = append(vars, "&"+name)
+		names = append(names, name+"_S")
+		fmt.Printf("const char %s_S[] PROGMEM = \"%s\";\n", name, display)
+		fmt.Printf("Param %s{%s, %s, %s};\n", name, row[1], row[2], row[3])
 	}
 
-	// Array of name strings, indexed by CC#
-	fmt.Printf("const char* const PARAM_NAMES[] =\n{\n")
-	for i, row := range rows[1:] {
-		name := strings.Trim(strings.ToTitle(row[0]), " ")
-		//for _, c := range ".()/-*" {
-		//	name = strings.Replace(name, string(c), "", -1)
-		//}
-		//name = strings.ReplaceAll(name, " ", "_")
-		fmt.Printf("\t\"%s\"", name)
-		if i < len(rows)-2 {
-			fmt.Printf(",")
-		}
-		fmt.Printf("\n")
-	}
-	fmt.Printf("};\n")
+	fmt.Printf("const int NUM_PARAMS = %d;\n", len(vars))
+	fmt.Printf("Param *ALL_PARAMS[]{%s};\n", strings.Join(vars, ", "))
+	fmt.Printf("const char* const PARAM_NAMES[NUM_PARAMS] PROGMEM = {%s};\n", strings.Join(names, ", "))
 }
