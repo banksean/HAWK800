@@ -63,11 +63,11 @@ void setup() {
 
   pinMode(LED_BUILTIN, OUTPUT);
 
-  //MIDI.setHandleNoteOn(handleNoteOn);
-  //MIDI.setHandleNoteOff(handleNoteOff);
-  //MIDI.setHandleControlChange(handleControlChange);
-  //MIDI.begin(MIDI_CH);
-  //MIDI.turnThruOff();
+  MIDI.setHandleNoteOn(handleNoteOn);
+  MIDI.setHandleNoteOff(handleNoteOff);
+  MIDI.setHandleControlChange(handleControlChange);
+  MIDI.begin(MIDI_CH);
+  MIDI.turnThruOff();
 
   for (int i = 0; i < NUM_PARAMS; i++) {
           Param param;
@@ -110,6 +110,7 @@ void setup() {
   */
 }
 
+int lastCC = 83;
 
 void handleControlChange(byte channel, byte number, byte value) {
   if (channel != MIDI_CH) {
@@ -118,7 +119,7 @@ void handleControlChange(byte channel, byte number, byte value) {
   // Reset the last control, since we don't know what the other
   // MIDI device sent or why. Just assume we need to send the 
   // parameter select CC again next time.
-  //lastCtrl = 83;
+  lastCC = 83;
   
   MIDI.sendControlChange(number, value, channel);
 }
@@ -133,6 +134,8 @@ void handleNoteOn(byte channel, byte pitch, byte velocity) {
   // Display static text
   //display.fillRect(0, 40, SCREEN_WIDTH, 10, SH110X_BLACK);
   //display.println("Note ON");
+  u8x8.clearLine(5);
+  u8x8.drawString(0, 5, "Note ON");
   update = true;
   //display.display(); 
 }
@@ -148,11 +151,15 @@ void handleNoteOff(byte channel, byte pitch, byte velocity) {
   // Display static text
   //display.fillRect(0, 40, SCREEN_WIDTH, 10, SH110X_BLACK);
   //display.println("Note OFF");
+  u8x8.clearLine(5);
+  u8x8.drawString(0, 5, "Note OFF");
+
   update = true;
 }
 
 
 void loop() {
+  MIDI.read();
   update = false;
   static char buff[16];
   bool updateRow[NUM_ENCODERS];
@@ -189,10 +196,20 @@ void loop() {
       } else {
         PARAM_VALUES[SELECTED_PARAM[i]] = v;
         // TODO: Speed this up. Too much copying just to get the cc msg.
-        //Param param;
-        //memcpy_P(&param, &(ALL_PARAMS[SELECTED_PARAM[i]]), sizeof(Param));
-        //MIDI.sendControlChange(84, param.cc, MIDI_CH);
-        //MIDI.sendControlChange(85, v, MIDI_CH);
+        Param param;
+        memcpy_P(&param, &(ALL_PARAMS[SELECTED_PARAM[i]]), sizeof(Param));
+        if (lastCC != param.cc) {
+          MIDI.sendControlChange(84, param.cc, MIDI_CH);
+          lastCC = param.cc;
+        }
+        // scale v from [param.min, param.max] to [0, 127]
+        // *EXCEPT* for VCF cutoff. No idea why, but this one doesn't like to be scaled. Just send
+        // the raw value.
+        int val = 127 * (v - (int)param.min) / (int)(param.max - param.min);
+        if (param.cc == VCF_CUT_OFF_SET_POINT.cc) {
+          val = v;
+        }
+        MIDI.sendControlChange(85, val, MIDI_CH);
       }
     } 
     update = update || updateRow[i];
